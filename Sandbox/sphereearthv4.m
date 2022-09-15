@@ -13,6 +13,8 @@ global initialstate gridN im idx fig finalr finalstate mu
 idx = 0;
 
 filename = 'newcs.gif'; % specify file name
+outFolderName = "C:\Users\billy\Documents\GitHub\trajectoryOpt\Sandbox\Presentationworthy\minaccelandtime_circularinsertion_flatearth";   % Your destination folder
+
 %% trajectory options
 finalr = 1500+r_earth; %km
 initialstate = [0,r_earth,0,0];
@@ -22,6 +24,7 @@ maxacc = 0.5; %max lateral acceleration
 %% optimizer options
 gridN = 50;
 generateplots = 1;
+generategif = 0;
 TolFun = 0.0001;
 TolX = 0.0000000001;
 TolCon = 1e-3;
@@ -61,7 +64,7 @@ ub = [Inf;  ones(gridN * 1, 1) * Inf ; ones(gridN * 1, 1) * finalr; 50; ones(gri
 % Options for fmincon
 optionslist = strcat("@fmincon, 'TolFun', ",num2str(TolFun),", 'TolX',",num2str(TolX),", 'TolCon',",num2str(TolCon),", 'MaxIter',",num2str(MaxIter),",'MaxFunEvals', ",num2str(MaxFunEvals),...
     ", 'Display', 'iter','DiffMinChange',",num2str(DiffMinChange),", 'Algorithm', '", Algorithm,"'");
-if generateplots
+if generategif
     optionslist = strcat(optionslist,",'OutputFcn', @out");
     fig=figure('Position',[10 10 1200 800]);
 end
@@ -97,9 +100,7 @@ fprintf("Time of flight is: " + num2str(sim_time) + "\n");
 format long
 final_state = [xs(end);ys(end);xds(end);yds(end)]
 %% plotting 
-if generateplots
-
-    
+if generategif
     for idxx = 2:idx
         [A,map] = rgb2ind(im{idxx},256);
         if idxx - 1 == 1
@@ -110,7 +111,8 @@ if generateplots
             imwrite(A,map,filename,'gif','WriteMode','append','DelayTime',0.01);
         end
     end
-
+end
+if generateplots
     % positions
     figure()
     plot(xs,ys)
@@ -173,6 +175,13 @@ if generateplots
     title('acceleration command vs Time');
     legend('x', 'y');
 
+    FigList = findobj(allchild(0), 'flat', 'Type', 'figure');
+    for iFig = 1:length(FigList)
+      FigHandle = FigList(iFig);
+      FigName   = num2str(get(FigHandle, 'Number'));
+      set(0, 'CurrentFigure', FigHandle);
+      savefig(fullfile(outFolderName, [FigName '.fig']));
+    end
 end
 
 
