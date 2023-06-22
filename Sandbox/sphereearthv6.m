@@ -22,7 +22,7 @@ finalstate = [500,r_earth+1500,0,0];
 maxacc = 0.5; %max lateral acceleration
 
 %% optimizer options
-gridN = 50;
+gridN = 25;
 generateplots = 1;
 generategif = 1;
 TolFun = 0.0001;
@@ -248,7 +248,7 @@ if strcmp(state,'iter')
     y = [xs(end), ys(end), xds(end),yds(end)];
     [T, X] = ode113(@CR2BP, t, y);
     
-    subplot(1,3,1)
+    subplot(2,2,1)
     plot(xs,ys,'.','MarkerSize',8);
     hold on
     plot(X(:,1), X(:,2), 'r')
@@ -260,16 +260,22 @@ if strcmp(state,'iter')
     legend('launch trajectory','resulting orbit','earth')
     axis equal
     grid on
-    subplot(1,3,2)
+    subplot(2,2,2)
     plot(xs,ys,'.','MarkerSize',8);
     title('Trajectory')
+    xlabel('X (m)')
+    grid on
+    ylabel('Y (m)')
     axis equal
-    subplot(1,3,3)
+    subplot(2,2,3:4)
     plot(times,xcmd);
     hold on
     plot(times,ycmd);
-    title('Acceleration commands (km/s^2)')
-    legend('x','y')
+    title('Acceleration Commands')
+    legend('X','Y')
+    xlabel('Time (s)')
+    ylabel('Command (km/s^2)')
+    grid on
     ylim([-0.5,0.5])
     hold off
     drawnow
@@ -296,6 +302,6 @@ hold on
 th = 0:pi/50:2*pi;
 xunit = rvar * cos(th) + xvar;
 yunit = rvar * sin(th) + yvar;
-h = plot(xunit, yunit);
+h = plot(xunit, yunit,'color',[0 0.5 0]);
 hold off
 end

@@ -13,7 +13,7 @@ idx = 0;
 %% trajectory options
 initialstate = [0,0,0,0];
 finalstate = [500,1500,0,0];
-maxacc = .5; %max  acceleration
+maxacc = 50; %max  acceleration
 
 %% optimizer options
 gridN = 50;
@@ -27,8 +27,8 @@ MaxFunEvals = 1e7;
 DiffMinChange = 0.001;
 Algorithm = 'sqp';
 %weights for cost function
-w1 = 0.4;
-w2 = 0.4;
+w1 = 0;
+w2 = 0;
 w3 = 0.2;
 
 
@@ -104,11 +104,11 @@ if generateplots
 
     % positions
     figure()
-    plot(xs,ys)
+    plot(xs,ys, '.')
     axis equal
-    title('3D relative motion plot');
-    xlabel('x');
-    ylabel('y');
+    title('2D Motion Plot');
+    xlabel('x (m)');
+    ylabel('y (m)');
 
 
     % variables vs time
@@ -117,20 +117,26 @@ if generateplots
     hold on
     plot(times, ys)
     title('Position vs Time');
+    xlabel('time (s)')
+    ylabel('Position (m)')
     legend('x', 'y', 'z');
 
     figure();
     plot(times, xds)
     hold on
     plot(times, yds)
-    title('velocity vs Time');
+    title('Velocity vs Time');
+    xlabel('time (s)')
+    ylabel('Velocity (m/s)')
     legend('x', 'y', 'z');
 
     figure();
     plot(times, xcmd)
     hold on
     plot(times, ycmd)
-    title('acceleration command vs Time');
+    title('Acceleration Command vs Time');
+    xlabel('time (s)')
+    ylabel('Acceleration Command (m/s^2)')
     legend('x', 'y');
 
 end
@@ -155,17 +161,18 @@ global gridN initialstate finalstate
     for i = 1 : length(xs) - 1
         % The state at the beginning of the time interval
         x_i = [xs(i); ys(i); xds(i); yds(i)];
-        xdot_i = [xds(i); yds(i);xcmd(i);ycmd(i)-9.81e-3];
+        xdot_i = [xds(i); yds(i);xcmd(i);ycmd(i)-9.81];
         % What the state should be at the start of the next time interval
         x_n = [xs(i+1); ys(i+1); xds(i+1); yds(i+1)];
-        xdot_n = [xds(i+1); yds(i+1);xcmd(i+1);ycmd(i)-9.81e-3];
+        xdot_n = [xds(i+1); yds(i+1);xcmd(i+1);ycmd(i+1)-9.81];
         x_end = x_i + delta_time*(xdot_i+xdot_n)/2;
 
         ceq = [ceq ; x_n - x_end];
     end
     % Constrain end position and end velocity to 0
 %     ceq = [ceq ; xs(end) - finalstate(1); ys(end) - finalstate(2); xds(end) - finalstate(3); yds(end) - finalstate(4)];
-    ceq = [ceq ; sqrt(xs(end)^2 + ys(end)^2) - 1500; xds(end) - finalstate(3); yds(end) - finalstate(4)];
+    ceq = [ceq ; xs(end) - finalstate(1); ys(end) - finalstate(2); xds(end) - finalstate(3); yds(end) - finalstate(4)];
+%     ceq = [ceq ; sqrt(xs(end)^2 + ys(end)^2) - 1500];
 end
 
 function stop = out(x,omtimValue,state)

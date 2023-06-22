@@ -2,7 +2,7 @@ global gridN maxacc initialposition initialvelocity w impactpos legendlist idx i
 gridN = 50;
 initialposition = [0, 0, 0];
 initialvelocity = [0, 500, 0];
-impactpos = [0,0,120];
+impactpos = [-40,60,20];
 legendlist = [];
 idx=1;
 % spacecraft parameters
@@ -16,6 +16,8 @@ idx=1;
 tic
 % Minimize the simulation time
 time_min = @(x) x(1);
+speed_max = @(x) -(x(1 + gridN * 4)^2 + x(1 + gridN * 5)^2 + x(1 + gridN * 6)^2);
+J = speed_max;
 % The initial parameter guess; 1 second, gridN x, gridN y, gridN z, gridN
 % xdot, gridN ydot, gridN zdot, gridN alphas, gridN phis, gridN Ts
 x0 = [1; linspace(500,1,gridN)'; linspace(1,1,gridN)'; linspace(1,1,gridN)'; linspace(1,1,gridN)'; linspace(50,1,gridN)'; linspace(1,1,gridN)'];
@@ -30,7 +32,7 @@ Beq = [];
 % Beq = [initialposition(1);initialposition(2);initialposition(3)];
 % Lower bound the simulation time at zero seconds, and bound the
 % accelerations between -10 and 30
-lb = [1;    ones(gridN * 3, 1) * -Inf; 0 ; ones(gridN-1, 1) * -Inf; 0 ; ones(gridN-1, 1) * -Inf; 0 ; ones(gridN-1, 1) * -Inf];
+lb = [1;    ones(gridN * 3, 1) * -Inf; -50 ; ones(gridN-1, 1) * -Inf; -50 ; ones(gridN-1, 1) * -Inf; -50 ; ones(gridN-1, 1) * -Inf];
 ub = [Inf;  ones(gridN * 3, 1) * Inf ; 50; ones(gridN-1, 1) *  Inf; 50; ones(gridN-1, 1) *  Inf; 50; ones(gridN-1, 1) *  Inf];
 % Options for fmincon
 options = optimoptions(@fmincon, 'TolFun', 0.001, 'TolX',0.001, 'MaxIter', 100, ...
@@ -38,7 +40,7 @@ options = optimoptions(@fmincon, 'TolFun', 0.001, 'TolX',0.001, 'MaxIter', 100, 
                        'DiffMinChange', 0.001, 'Algorithm', 'sqp','OutputFcn', @out);
 % Solve for the best simulation time + control input
 fig=figure();
-optimal = fmincon(time_min, x0, A, b, Aeq, Beq, lb, ub, ...
+optimal = fmincon(J, x0, A, b, Aeq, Beq, lb, ub, ...
               @double_integrator_constraints2, options);
 close();
 % Discretize the times
@@ -126,14 +128,20 @@ legend('x', 'y', 'z');
 % ylabel('Thrust (N)');
 % 
 figure()
-plot3(xs,ys,zs)
+plot3(xs,ys,zs,'.')
 axis equal
-title('3D relative motion plot');
+title('3D Relative Motion Plot - TOF Minimized');
 xlabel('x');
 ylabel('y');
 zlabel('z');
-
-
+grid on
+xlabel('x (m)')
+ylabel('y (m)')
+zlabel('z (m)')
+disp('final speed is')
+disp(sqrt(xds(end)^2 + yds(end)^2 + zds(end)^2))
+disp('TOF is')
+disp(sim_time)
 function [ c, ceq ] = double_integrator_constraints2( x )
 global gridN maxacc initialposition initialvelocity w impactpos
     c=[];

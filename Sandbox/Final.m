@@ -13,7 +13,7 @@ global initialstate gridN im idx fig finalr finalstate mu
 idx = 0;
 
 filename = 'newcs.gif'; % specify file name
-outFolderName = "C:\Users\billy\Documents\GitHub\trajectoryOpt\Sandbox\Presentationworthy\test\";   % Your destination folder
+outFolderName = "C:\Users\billy\Documents\GitHub\trajectoryOpt\Sandbox\Presentationworthy\forpres\";   % Your destination folder
 filename = strcat(outFolderName,filename)
 mkdir(outFolderName)
 
@@ -121,9 +121,9 @@ end
 if generateplots
     % positions
     figure()
-    plot(xs,ys)
+    plot(xs,ys, '.')
     axis equal
-    title('3D relative motion plot');
+    title('2D relative motion plot');
     xlabel('x');
     ylabel('y');
 
